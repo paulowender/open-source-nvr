@@ -1,6 +1,6 @@
 import http from "http";
 
-export default async function (
+export default async function server_fetch(
   url: string,
   opts = {} as http.RequestOptions,
   body?: string | object

@@ -1,36 +1,11 @@
-var lexint = require("lexicographic-integer");
-
+import { ControlData } from "../types/ControlData.js";
+import { JobData } from "../types/JobData.js";
+import { JobReturn } from "../types/JobReturn.js";
+import { JobTask } from "../types/JobTask.js";
 import { Atomic } from "./atomic.js";
 //import { LevelUp } from 'levelup'
 import sub from "subleveldown";
-
-export interface ControlData {
-  nextSequence: number;
-  nextToRun: number;
-  numberCompleted: number;
-  numberRunning: number;
-}
-
-export interface JobData {
-  task: JobTask;
-  movement_key: number;
-}
-
-export enum JobTask {
-  ML,
-  Snapshot,
-}
-
-export interface JobReturn {
-  seq: number;
-  status: JobStatus;
-  newJob?: JobData;
-}
-
-export enum JobStatus {
-  Success,
-  Error,
-}
+var lexint = require("lexicographic-integer");
 
 const avro = require("avsc");
 const queueJobData = avro.Type.forValue({

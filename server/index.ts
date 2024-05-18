@@ -1,31 +1,29 @@
-import fs from "fs/promises";
-import { createReadStream } from "fs";
-import server_fetch from "./server_fetch.js";
 import Router from "@koa/router";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { createReadStream } from "fs";
+import fs from "fs/promises";
 import bodyParser from "koa-bodyparser";
 import level from "level";
 import sub from "subleveldown";
 import { catalogVideo, diskCheck, DiskCheckReturn } from "./diskcheck.js";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import server_fetch from "./server_fetch.js";
 // import { clearScreenDown } from "readline";
 
-import {
-  JobManager,
-  JobStatus,
-  JobReturn,
-  JobData,
-  JobTask,
-} from "./jobmanager.js";
 import { CameraCache } from "../types/CameraCache.js";
-import { SettingsCache } from "../types/SettingsCache.js";
-import { MovementEntry } from "../types/MovementEntry.js";
-import { MLData } from "../types/MLData.js";
-import { ProcessInfo } from "../types/ProcessInfo.js";
-import { CameraEntry } from "../types/CameraEntry.js";
-import { Settings } from "../types/Settings.js";
 import { CameraCacheEntry } from "../types/CameraCacheEntry.js";
+import { CameraEntry } from "../types/CameraEntry.js";
 import { CameraEntryClient } from "../types/CameraEntryClient.js";
+import { JobData } from "../types/JobData.js";
+import { JobReturn } from "../types/JobReturn.js";
+import { JobStatus } from "../types/JobStatus.js";
+import { JobTask } from "../types/JobTask.js";
+import { MLData } from "../types/MLData.js";
+import { MovementEntry } from "../types/MovementEntry.js";
 import { MovementToClient } from "../types/MovementToClient.js";
+import { ProcessInfo } from "../types/ProcessInfo.js";
+import { Settings } from "../types/Settings.js";
+import { SettingsCache } from "../types/SettingsCache.js";
+import { JobManager } from "./jobmanager.js";
 
 const Koa = require("koa"),
   send = require("koa-send"),
@@ -33,7 +31,6 @@ const Koa = require("koa"),
 
 var cameraCache: CameraCache = {};
 var settingsCache: SettingsCache;
-
 
 const db = level(process.env["DBPATH"] || "./mydb", { valueEncoding: "json" });
 const cameradb = sub(db, "cameras", { valueEncoding: "json" });
