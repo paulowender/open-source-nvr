@@ -1,6 +1,6 @@
 //import logo from './logo.svg';
 import './App.css';
-import React, { useEffect }  from 'react';
+import React, { useEffect } from 'react';
 import videojs from 'video.js'
 import { ThemeProvider, CommandBar, Text, DetailsList, Stack, Selection, SelectionMode } from '@fluentui/react'
 import { initializeIcons } from '@fluentui/react/lib/Icons';
@@ -29,7 +29,7 @@ const appTheme = createTheme({
 
 initializeIcons(/* optional base url */);
 
-function VideoJS (props)  {
+function VideoJS(props) {
 
   const videoRef = React.useRef(null);
   const playerRef = React.useRef(null);
@@ -75,7 +75,7 @@ function VideoJS (props)  {
 
 function App() {
 
-  const [panel, setPanel] = React.useState({open: false, invalidArray: []});
+  const [panel, setPanel] = React.useState({ open: false, invalidArray: [] });
 
   //const [invalidArray, setInvalidArray] = React.useState([])
 
@@ -91,7 +91,7 @@ function App() {
 
   const playerRef = React.useRef(null);
 
-  console.log ("mode: ", mode)
+  console.log("mode: ", mode)
 
   const handlePlayerReady = (player) => {
     playerRef.current = player;
@@ -108,22 +108,22 @@ function App() {
 
   function getServerData() {
     //setCurrentPlaying(null)
-    console.log ('getServerData, mode=', mode)
-    setData({...init_data, status: 'fetching'})
+    console.log('getServerData, mode=', mode)
+    setData({ ...init_data, status: 'fetching' })
     fetch(`/api/movements?mode=${mode}`)
       .then(res => res.json())
       .then(
         (result) => {
-          setData({...result, status: 'success'})
+          setData({ ...result, status: 'success' })
 
-          console.log (`got refresh, find first streaming enabled camera & play`)
+          console.log(`got refresh, find first streaming enabled camera & play`)
           const streamingCameras = result?.cameras.filter(c => c.enable_streaming)
 
           if (currentPlaying && streamingCameras.findIndex(c => c.key === currentPlaying.cKey) >= 0 && (!currentPlaying.mKey || result?.movements.findIndex(m => m.key === currentPlaying.mKey) >= 0)) {
-            console.log (`we can continue playing same before refresh, because camera and/or movement is still valid`)
+            console.log(`we can continue playing same before refresh, because camera and/or movement is still valid`)
           } else {
             if (streamingCameras && streamingCameras.length > 0) {
-              playVideo (streamingCameras[0].key)
+              playVideo(streamingCameras[0].key)
             }
           }
         },
@@ -131,25 +131,25 @@ function App() {
         // instead of a catch() block so that we don't swallow
         // exceptions from actual bugs in components.
         (error) => {
-          setData({...init_data, status: 'error', message: error})
+          setData({ ...init_data, status: 'error', message: error })
           console.warn(error)
         }
       )
   }
 
-  
+
   useEffect(getServerData, [mode])
 
   function playVideo(cKey, mKey, mStartSegment, mSeconds, segments_prior_to_movement, segments_post_movement) {
-    console.log (`playVideo mode=${mode} cameraKey=${cKey} mKey=${mKey}`)
+    console.log(`playVideo mode=${mode} cameraKey=${cKey} mKey=${mKey}`)
     const mPlayer = playerRef.current
     //console.log ("playVideo data: ", data)
     //const camera = cKey && data.cameras.find(c => c.key === cKey)
     if (cKey && mPlayer && (!currentPlaying || (currentPlaying.cKey !== cKey || currentPlaying.mKey !== mKey))) {
 
-      setCurrentPlaying({ cKey, mKey})
+      setCurrentPlaying({ cKey, mKey })
       mPlayer.src({
-        src: `/video/${mKey ? `${mStartSegment}/${mSeconds}` : 'live' }/${cKey}/stream.m3u8${(mKey && segments_prior_to_movement) ? `?preseq=${segments_prior_to_movement}&postseq=${segments_post_movement}` : ''}`,
+        src: `/video/${mKey ? `${mStartSegment}/${mSeconds}` : 'live'}/${cKey}/stream.m3u8${(mKey && segments_prior_to_movement) ? `?preseq=${segments_prior_to_movement}&postseq=${segments_post_movement}` : ''}`,
         type: 'application/x-mpegURL'
       })
 
@@ -162,22 +162,22 @@ function App() {
     }
   }
 
-  
+
   const _selection = new Selection({
-    getKey: function (m) { return  m.key },
+    getKey: function (m) { return m.key },
     onSelectionChanged: function () {
       //console.log (`onSelectionChanged: getSelectedIndices()=${JSON.stringify(_selection.getSelectedIndices())}, getSelection()=${JSON.stringify(_selection.getSelection())}`)
       const selectedItems = _selection.getSelection()
       if (selectedItems.length > 0) {
-        const {key, cameraKey, startSegment, seconds, segments_prior_to_movement, segments_post_movement} = selectedItems[0]
+        const { key, cameraKey, startSegment, seconds, segments_prior_to_movement, segments_post_movement } = selectedItems[0]
         playVideo(cameraKey, key, startSegment, seconds, segments_prior_to_movement, segments_post_movement)
       }
     }
   })
 
   function _debug(item) {
-    console.log (item)
-    alert (JSON.stringify(item, null, 4))
+    console.log(item)
+    alert(JSON.stringify(item, null, 4))
   }
 
   function downloadMovement() {
@@ -188,26 +188,26 @@ function App() {
     }
   }
 
-/*
-  function filterIgnoreTags(cameraKey, ml) {
-    if (ml && ml.success && Array.isArray(ml.tags) && ml.tags.length > 0) {
-      const { ignore_tags } = data.cameras.find(c => c.key === cameraKey) || {}
-      if (ignore_tags && Array.isArray(ignore_tags) && ignore_tags.length > 0) {
-        return ml.tags.reduce((a, c) => ignore_tags.includes(c.tag) ? a : a.concat(c), [])
-      } else {
-        return ml.tags
+  /*
+    function filterIgnoreTags(cameraKey, ml) {
+      if (ml && ml.success && Array.isArray(ml.tags) && ml.tags.length > 0) {
+        const { ignore_tags } = data.cameras.find(c => c.key === cameraKey) || {}
+        if (ignore_tags && Array.isArray(ignore_tags) && ignore_tags.length > 0) {
+          return ml.tags.reduce((a, c) => ignore_tags.includes(c.tag) ? a : a.concat(c), [])
+        } else {
+          return ml.tags
+        }
       }
+      return []
     }
-    return []
-  }
-*/
+  */
   function renderTags(selectedList, idx) {
 
     if (false) {
-    return <a target="_blank" href="http://www.google.com"><Stack>{[{tag: "tag1", probability: 100},{tag: "tag1", probability: 100}].map((t, idx) => <Text key={idx} variant="mediumPlus" >{t.tag} ({t.probability})</Text>)}</Stack></a>
+      return <a target="_blank" href="http://www.google.com"><Stack>{[{ tag: "tag1", probability: 100 }, { tag: "tag1", probability: 100 }].map((t, idx) => <Text key={idx} variant="mediumPlus" >{t.tag} ({t.probability})</Text>)}</Stack></a>
     }
 
-    const { key, cameraKey, ml, ffmpeg} = selectedList
+    const { key, cameraKey, ml, ffmpeg } = selectedList
     const img = `/image/${key}`
 
     if (ml) {
@@ -219,7 +219,7 @@ function App() {
           return <a target="_blank" href={img}><Text variant="mediumPlus" >ML Image</Text></a>
         }
       } else {
-        return <Text styles={{ root: {color: 'red'}}} variant="mediumPlus">{ml.code}: {ml.stderr} {ml.error}</Text>
+        return <Text styles={{ root: { color: 'red' } }} variant="mediumPlus">{ml.code}: {ml.stderr} {ml.error}</Text>
       }
     } else if (ffmpeg) {
       if (ffmpeg.success) {
@@ -247,20 +247,20 @@ function App() {
 
       <div style={{ "height": "34px", "width": "100%" }} />
 
-      <PanelSettings data={data} panel={panel} setPanel={setPanel} getServerData={getServerData}/>
+      <PanelSettings data={data} panel={panel} setPanel={setPanel} getServerData={getServerData} />
 
       <Stack horizontal wrap >
 
 
         {showPlayer &&
           <Stack.Item styles={{ root: { width: "700px" } }} grow={1}>
-            <VideoJS  options={{
-                autoplay: true,
-                muted:"muted",
-                controls: true,
-                aspectRatio: '4:3',
-                liveui: true
-              }} onReady={handlePlayerReady}/>
+            <VideoJS options={{
+              autoplay: true,
+              muted: "muted",
+              controls: true,
+              aspectRatio: '4:3',
+              liveui: true
+            }} onReady={handlePlayerReady} />
 
 
           </Stack.Item>
@@ -280,12 +280,14 @@ function App() {
                   currentPlaying && playVideo(currentPlaying.cKey)
                 },
                 subMenuProps: {
-                  items: data.cameras.filter(c => c.enable_streaming).map(c => { return {
+                  items: data.cameras.filter(c => c.enable_streaming).map(c => {
+                    return {
                       key: c.key,
                       text: c.name,
                       iconProps: { iconName: 'FrontCamera' },
                       onClick: () => playVideo(c.key)
-                    }})/*.concat([{
+                    }
+                  })/*.concat([{
                       key: 'all',
                       text: 'All',
                       iconProps: { iconName: 'FrontCamera' },
@@ -302,17 +304,17 @@ function App() {
                     {
                       key: 'movement',
                       text: 'Movement',
-                      onClick: () => setMode ('Movement'),
+                      onClick: () => setMode('Movement'),
                     },
                     {
                       key: 'filtered',
                       text: 'Filtered',
-                      onClick: () => setMode ('Filtered'),
+                      onClick: () => setMode('Filtered'),
                     },
                     {
                       key: 'time',
                       text: 'Time',
-                      onClick: () => setMode ('Time'),
+                      onClick: () => setMode('Time'),
                     }
                   ]
                 }
@@ -340,7 +342,7 @@ function App() {
               checked: !showPlayer,
               iconProps: { iconName: 'Tiles' },
               onClick: () => setShowPlayer(!showPlayer)
-            },{
+            }, {
               key: 'settings',
               text: 'Settings',
               // This needs an ariaLabel since it's icon-only
@@ -349,49 +351,55 @@ function App() {
               iconProps: { iconName: 'Settings' },
               subMenuProps: {
                 items: [{
-                    key: 'settings',
-                    text: 'Settings',
-                    iconProps: { iconName: 'DataManagementSettings' },
-                    onClick: () => {
-                      setPanel({...panel, open: true, key: 'settings', invalidArray:[], heading: 'General and Disk Settings', values: { ...data.config.settings }})
-                    }
-                }].concat(data.cameras.map(c => { return {
+                  key: 'settings',
+                  text: 'Settings',
+                  iconProps: { iconName: 'DataManagementSettings' },
+                  onClick: () => {
+                    setPanel({ ...panel, open: true, key: 'settings', invalidArray: [], heading: 'General and Disk Settings', values: { ...data.config.settings } })
+                  }
+                }].concat(data.cameras.map(c => {
+                  return {
                     key: c.key,
                     text: `Settings "${c.name}"`,
                     iconProps: { iconName: 'FrontCamera' },
                     ['data-automation-id']: 'newEmailButton', // optional
                     onClick: () => {
-                      setPanel({...panel, open: true, key: 'edit', invalidArray: [],  heading: 'Edit Camera Details', values: {
-                        key: c.key,
-                        name: c.name,
-                        folder: c.folder,
-                        disk: c.disk,
-                        secWithoutMovement: c.secWithoutMovement,
-                        secMaxSingleMovement: c.secMaxSingleMovement,
-                        mSPollFrequency: c.mSPollFrequency,
-                        segments_prior_to_movement: c.segments_prior_to_movement,
-                        segments_post_movement: c.segments_post_movement,
-                        ignore_tags: c.ignore_tags,
-                        enable_streaming: c.enable_streaming,
-                        enable_movement: c.enable_movement,
-                      }})
+                      setPanel({
+                        ...panel, open: true, key: 'edit', invalidArray: [], heading: 'Edit Camera Details', values: {
+                          key: c.key,
+                          name: c.name,
+                          folder: c.folder,
+                          disk: c.disk,
+                          secWithoutMovement: c.secWithoutMovement,
+                          secMaxSingleMovement: c.secMaxSingleMovement,
+                          mSPollFrequency: c.mSPollFrequency,
+                          segments_prior_to_movement: c.segments_prior_to_movement,
+                          segments_post_movement: c.segments_post_movement,
+                          ignore_tags: c.ignore_tags,
+                          enable_streaming: c.enable_streaming,
+                          enable_movement: c.enable_movement,
+                        }
+                      })
                     }
-                  }}).concat (
+                  }
+                }).concat(
                   {
                     key: 'Add',
                     text: 'Add Camera',
                     iconProps: { iconName: 'Add' },
-                    onClick: () => setPanel({...panel, open: true, key: 'new', invalidArray: [], heading: 'Add New Camera', values: {
-                      secWithoutMovement: 10,
-                      secMaxSingleMovement: 600,
-                      mSPollFrequency: 1000,
-                      disk: data.config.settings.disk_base_dir,
-                      segments_prior_to_movement: 10, // 20 seconds (2second segments)
-                      segments_post_movement: 10, // 20 seconds (2second segments)
-                      ignore_tags: ['car'],
-                      enable_streaming: true,
-                      enable_movement: true,
-                    }}),
+                    onClick: () => setPanel({
+                      ...panel, open: true, key: 'new', invalidArray: [], heading: 'Add New Camera', values: {
+                        secWithoutMovement: 10,
+                        secMaxSingleMovement: 600,
+                        mSPollFrequency: 1000,
+                        disk: data.config.settings.disk_base_dir,
+                        segments_prior_to_movement: 10, // 20 seconds (2second segments)
+                        segments_post_movement: 10, // 20 seconds (2second segments)
+                        ignore_tags: ['car'],
+                        enable_streaming: true,
+                        enable_movement: true,
+                      }
+                    }),
                   }
                 ))
               }
@@ -401,59 +409,60 @@ function App() {
             farItemsGroupAriaLabel="More actions"
           />
           <ThemeProvider theme={appTheme}>
-              <DetailsList
-                className="scrollMe"
-                isHeaderVisible={false}
-                items={data.movements.map(m => { 
-                  const camera =  data.cameras.find(c => c.key === m.movement.cameraKey)
-                  return  {
-                    key: m.key,
-                    ...m.movement, 
-                    startDate_en_GB: m.startDate_en_GB, 
-                    ...(camera && { 
-                      cameraName: camera.name, 
-                      segments_prior_to_movement: mode === "Time" ? 0: camera.segments_prior_to_movement, 
-                      segments_post_movement: mode === "Time" ? 0: camera.segments_post_movement
-                    })
-                }})}
-                compact={true}
-                setKey="key"
-                onShouldVirtualize={() => {
-                  return false;
-                }}
-                columns={[
-                  {
-                    key: "startDate_en_GB", 
-                    isRowHeader: true,
-                    fieldName: "startDate_en_GB",
-                    minWidth: 120,
-                    maxWidth: 120
-                  },
-                  {
-                    key: "cameraName", 
-                    fieldName: "cameraName",
-                    minWidth: 38,
-                    maxWidth: 38
-                    //onRender: (item) => <Text variant='medium' styles={{root: {background: 'yellow'}}} >{item.cameraName}</Text>
-                  },
-                  {
-                    key: "seconds", 
-                    fieldName: "seconds",
-                    minWidth: 25,
-                    maxWidth: 30
-                  }
-                ].concat(mode !== "Time" && showPlayer ? {
-                  name: "Save", 
-                  key: "stat",  
-                  onRender: renderTags
-                } : [])
+            <DetailsList
+              className="scrollMe"
+              isHeaderVisible={false}
+              items={data.movements.map(m => {
+                const camera = data.cameras.find(c => c.key === m.movement.cameraKey)
+                return {
+                  key: m.key,
+                  ...m.movement,
+                  startDate_en_GB: m.startDate_en_GB,
+                  ...(camera && {
+                    cameraName: camera.name,
+                    segments_prior_to_movement: mode === "Time" ? 0 : camera.segments_prior_to_movement,
+                    segments_post_movement: mode === "Time" ? 0 : camera.segments_post_movement
+                  })
                 }
-                selection={_selection}
-                selectionMode={SelectionMode.single}
-                onItemInvoked={_debug}
-                //onActiveItemChanged={_onActiveItemChanged}
-              />
-           
+              })}
+              compact={true}
+              setKey="key"
+              onShouldVirtualize={() => {
+                return false;
+              }}
+              columns={[
+                {
+                  key: "startDate_en_GB",
+                  isRowHeader: true,
+                  fieldName: "startDate_en_GB",
+                  minWidth: 120,
+                  maxWidth: 120
+                },
+                {
+                  key: "cameraName",
+                  fieldName: "cameraName",
+                  minWidth: 38,
+                  maxWidth: 38
+                  //onRender: (item) => <Text variant='medium' styles={{root: {background: 'yellow'}}} >{item.cameraName}</Text>
+                },
+                {
+                  key: "seconds",
+                  fieldName: "seconds",
+                  minWidth: 25,
+                  maxWidth: 30
+                }
+              ].concat(mode !== "Time" && showPlayer ? {
+                name: "Save",
+                key: "stat",
+                onRender: renderTags
+              } : [])
+              }
+              selection={_selection}
+              selectionMode={SelectionMode.single}
+              onItemInvoked={_debug}
+            //onActiveItemChanged={_onActiveItemChanged}
+            />
+
           </ThemeProvider>
         </Stack.Item>
 

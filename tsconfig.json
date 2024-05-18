@@ -24,5 +24,7 @@
     "sourceMap": true,
     "outDir": "lib"
   },
-  "include": ["server/**/*.ts"]
+  "include": [
+    "server/**/*.ts"
+  ]
 }
