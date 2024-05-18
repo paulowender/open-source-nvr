@@ -1,10 +1,9 @@
-import fs from "fs/promises";
-import { stat } from "fs/promises";
 import { spawn } from "child_process";
+import fs, { stat } from "fs/promises";
+import { DiskCheckReturn } from "../types/DiskCheckReturn";
+import { DiskDeleteStats } from "../types/DiskDeleteStats";
 
-async function runDF(
-  folder: string
-): Promise<{
+async function runDF(folder: string): Promise<{
   device: string;
   sizeKB: number;
   usedKB: number;
@@ -109,20 +108,6 @@ async function needtoRemoveKB(
   } else {
     return 0;
   }
-}
-
-interface DiskDeleteStats {
-  removedMB: number;
-  removedFiles: number;
-  lastRemovedctimeMs?: number;
-  lastRemovedIdx?: number;
-}
-
-export interface DiskCheckReturn {
-  revmovedMBTotal: number;
-  folderStats: {
-    [folder: string]: DiskDeleteStats;
-  };
 }
 
 // Clear down OLDEST removedFiles on each camera streaming directory, until it is under the cleanIfOver percentage
@@ -251,9 +236,7 @@ export async function diskCheck(
   }
 }
 
-export async function catalogVideo(
-  cameraFolder: string
-): Promise<
+export async function catalogVideo(cameraFolder: string): Promise<
   Array<{
     ctimeMs: number;
     startDate_en_GB: string;

@@ -1,8 +1,7 @@
-export interface AtomicInterface {
-  aquire(): Promise<() => void>;
-}
-
 //
+
+import { AtomicInterface } from "../types/AtomicInterface";
+
 // Big thanks to https://github.com/DirtyHairy/async-mutex/blob/master/src/Semaphore.ts
 export class Atomic implements AtomicInterface {
   private _queue: Array<(lease: [number, () => void]) => void> = [];
