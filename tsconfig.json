@@ -25,6 +25,7 @@
     "outDir": "lib"
   },
   "include": [
-    "server/**/*.ts"
+    "server/**/*.ts",
+    "types/**/*.ts"
   ]
 }

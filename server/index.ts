@@ -1,7 +1,3 @@
-const Koa = require("koa"),
-  send = require("koa-send"),
-  lexint = require("lexicographic-integer");
-
 import fs from "fs/promises";
 import { createReadStream } from "fs";
 import server_fetch from "./server_fetch.js";
@@ -10,6 +6,8 @@ import bodyParser from "koa-bodyparser";
 import level from "level";
 import sub from "subleveldown";
 import { catalogVideo, diskCheck, DiskCheckReturn } from "./diskcheck.js";
+import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+// import { clearScreenDown } from "readline";
 
 import {
   JobManager,
@@ -18,112 +16,24 @@ import {
   JobData,
   JobTask,
 } from "./jobmanager.js";
+import { CameraCache } from "../types/CameraCache.js";
+import { SettingsCache } from "../types/SettingsCache.js";
+import { MovementEntry } from "../types/MovementEntry.js";
+import { MLData } from "../types/MLData.js";
+import { ProcessInfo } from "../types/ProcessInfo.js";
+import { CameraEntry } from "../types/CameraEntry.js";
+import { Settings } from "../types/Settings.js";
+import { CameraCacheEntry } from "../types/CameraCacheEntry.js";
+import { CameraEntryClient } from "../types/CameraEntryClient.js";
+import { MovementToClient } from "../types/MovementToClient.js";
 
-interface Settings {
-  disk_base_dir: string;
-  enable_cleanup: boolean;
-  cleanup_interval: number;
-  cleanup_capacity: number;
-  enable_ml: boolean;
-  mlDir: string;
-  mlCmd: string;
-}
-interface MovementEntry {
-  cameraKey: string;
-  startDate: number;
-  startSegment: number;
-  lhs_seg_duration_seq?: number;
-  seconds: number;
-  consecutivesecondswithout: number;
-  ml?: MLData;
-  ml_movejpg?: SpawnData;
-  ffmpeg?: SpawnData;
-}
+const Koa = require("koa"),
+  send = require("koa-send"),
+  lexint = require("lexicographic-integer");
 
-interface MovementToClient {
-  key: number;
-  movement: MovementEntry;
-  startDate_en_GB: string;
-}
-
-interface SpawnData {
-  success: boolean;
-  code: number;
-  stdout: string;
-  stderr: string;
-  error: string;
-}
-interface MLData extends SpawnData {
-  tags: any[];
-}
-
-interface CameraEntry {
-  delete: boolean;
-  name: string;
-  folder: string;
-  disk: string;
-  ip?: string;
-  passwd?: string;
-  enable_streaming: boolean;
-  enable_movement: boolean;
-  secWithoutMovement: number;
-  secMaxSingleMovement: number;
-  mSPollFrequency: number;
-  segments_prior_to_movement: number;
-  segments_post_movement: number;
-  ignore_tags: string[];
-}
-
-interface ProcessInfo {
-  taskid: ChildProcessWithoutNullStreams | null;
-  check_after?: number;
-  in_progress: boolean;
-  error: boolean;
-  running: boolean;
-  status: string;
-}
-
-interface MovementStatus {
-  in_progress: boolean;
-  fail: boolean;
-  check_after?: number;
-  status?: string;
-  current_movement?: MovementEntry | null;
-}
-
-interface CameraEntryClient extends CameraEntry {
-  key: string;
-  ffmpeg_process?: ProcessInfo;
-  movementStatus?: MovementStatus;
-}
-
-interface CameraCacheEntry {
-  ce: CameraEntry;
-  ffmpeg_process?: ProcessInfo;
-  movementStatus?: MovementStatus;
-}
-
-interface CameraCache {
-  [key: string]: CameraCacheEntry;
-}
 var cameraCache: CameraCache = {};
-
-interface SettingsCache {
-  settings: Settings;
-  status: SettingsStatus;
-}
-
-interface SettingsStatus {
-  nextCheckInMinutes: number;
-  lastChecked?: Date;
-  fail: boolean;
-  error?: string;
-}
-
 var settingsCache: SettingsCache;
 
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
-import { clearScreenDown } from "readline";
 
 const db = level(process.env["DBPATH"] || "./mydb", { valueEncoding: "json" });
 const cameradb = sub(db, "cameras", { valueEncoding: "json" });
